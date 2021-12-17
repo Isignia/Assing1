@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#Here we import the sys module 
+
 import sys
 
 #This function will show user how to use the programm.
@@ -13,16 +13,10 @@ def dbda(start_date, num_days):
     '''
     dbda will take a date in DD-MM-YYYY format, positive or negative integer and return the date either before or after given date according to the value of integer. Will call other functions for calculations
     '''
-    error = usage()
-    if len(start_date) != 10:
-        return "Error: wrong date entered"
-    try:
-        numd = int(num_days)
-        tempdate = start_date
-        valid = valid_date(start_date)
-        if valid == False:
-            sys.exit()
-        else:
+    if valid_date(start_date) == True:
+        try:
+            numd = int(num_days)
+            tempdate = start_date
             while numd != 0:
                 if numd > 0:
                     tempdate = after(tempdate)
@@ -30,11 +24,12 @@ def dbda(start_date, num_days):
                 else:
                     tempdate = before(tempdate)
                     numd = numd + 1
-        error = usage()
-        kit = tempdate
-        return kit
-    except ValueError:
-        return error
+            kit = tempdate
+            return kit
+        except ValueError:
+            return "Error: wrong number of days entered"
+    else:
+        return valid_date(start_date)
 
     
     
@@ -51,26 +46,31 @@ def days_in_mon(month):
     return mon_max
 
 def valid_date(date):
-    ''' Help on valid_date'''
-    if len(date) != 10:
-        print("Error: wrong date entered ")
+    '''after takes a valid date string in DD-MM-YYYY format and returns a date string for the next day in DD-MM-YYYY format.'''
+    if len(date) != 10 or date.count("-") != 2:
+        return "Error: wrong date entered"
     else:
-        valid_year = int(date)
-        valid_month = int(date)
-        valid_day = int(date)
-        tempoday = valid_day
-        tempomonth = valid_month
-        days_in_month = days_in_mon(valid_year)
-        if tempomonth > 12 or tempomonth < 1:
-            print("Error: wrong month entered")
-            return False
-        else:
-            if tempoday > days_in_month[valid_month]:
-                print ("Error: wrong day entered")
-                return False
-            else:
-                next_date = str(tempoday).zfill(2)+"-"+str(tempomonth).zfill(2)+"-"+str(valid_year)
-                return next_date
+        str_day, str_month, str_year = date.split('-')
+        try:
+            year = int(str_year)
+            if year < 0:
+                raise ValueError
+        except ValueError:
+            return "Error: wrong year entered"
+        try:
+            month = int(str_month)
+            if month > 12 or month < 1:
+                raise ValueError
+        except ValueError:
+            return "Error: wrong month entered"
+        try:
+            day = int(str_day)
+            if day > days_in_mon(year)[month] or day < 1:
+                raise ValueError
+        except ValueError:
+            return "Error: wrong day entered"
+        return True
+    
 #This is leap year function, will check if its a leap year.
 
 def leap_year(year):
@@ -85,7 +85,7 @@ def leap_year(year):
     else:
         return False
 
-#This is after function,
+#This is after function, we will be using global variable to smooth the proccess
 def after(today):
     '''after takes a valid date string in DD-MM-YYYY format and returns a date string for the next day in DD-MM-YYYY format.'''
     if len(today) != 10:
@@ -113,12 +113,10 @@ def after(today):
         next_date = str(to_day).zfill(2)+"-"+str(to_month).zfill(2)+"-"+str(year)
         return next_date
 
+
 def before(prev):
     ''' Help on before function'''
-    str_day, str_month, str_year = prev.split('-')
-    prevyear = int(str_year)
-    prevmonth = int(str_month)
-    prevday = int(str_day)
+    prevday, prevmonth, prevyear = map(int, prev.split('-'))#, int)
     prevday_tempo = prevday -1 
     month_max = days_in_mon(prevyear)
 
@@ -144,8 +142,17 @@ def before(prev):
     
 if __name__ == "__main__":
     if len(sys.argv) == 3:
-        first = sys.argv[1]
-        second = sys.argv[2]
-        print(dbda(first, second))
+        d = sys.argv[1]
+        n = sys.argv[2]
+        print(dbda(d, n))
+    elif len(sys.argv) == 4:
+        s = sys.argv[1]
+        d = sys.argv[2]
+        n = sys.argv[3]
+        print ("???????????/")
+        if s == "--step":
+            dbda(d, n)
+        else:
+            print(usage())
     else:
         print((usage()))
